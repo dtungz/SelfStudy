@@ -6,10 +6,10 @@ public class PlayerController : MonoBehaviour
     // ----- FIELD -----
     [Header("REFERENCES")]
     [SerializeField] private InputManager inputManager;
-    [SerializeField] private Solider solider;
+    [SerializeField] private Survivor survivor;
 
     private void Update()
     {
-        solider.MoveHorizontal(inputManager.MoveDirection);
+        survivor.MoveHorizontal(inputManager.MoveDirection);
     }
 }

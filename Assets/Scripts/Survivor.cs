@@ -3,7 +3,7 @@ using System.Numerics;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
-public class Solider : MonoBehaviour
+public class Survivor : MonoBehaviour
 {
     [Header("CONFIG")]
     [SerializeField] private float hp = 100f;
@@ -13,14 +13,17 @@ public class Solider : MonoBehaviour
     
     [Header("REFERENCES")]
     [SerializeField] private CharacterController controller;
+    [SerializeField] private Weapon weapon;
     
     public float Hp => hp;
     public float MoveSpeed => moveSpeed;
     public float FireRate => fireRate;
+    
 
     private void Start()
     {
         _currentHp = hp;
+        weapon.Init(fireRate);
     }
 
     public void TakeDamage(float amount)
