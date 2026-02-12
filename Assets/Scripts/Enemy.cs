@@ -6,22 +6,14 @@ public class Enemy : MonoBehaviour
     [Header("FIND SURVIVOR")]
     [SerializeField] private LayerMask survivorLayer;
     [SerializeField] private float findRadius;
+    [SerializeField] private HealthComponent healthComponent;
     
     [Header("CONFIG")]
-    [SerializeField] private float health;
     [SerializeField] private float speed;
     [SerializeField] private float rotateSpeed;
     [SerializeField] private float damage;
     private Transform _target = null;
-    private float _currentHp;
-
-    private void Start()
-    {
-        _currentHp = health;
-        LookAhead(Vector3.back);
-
-    }
-
+    
     private void Update()
     {
         Move();
@@ -29,17 +21,19 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        // Debug.Log("TAKE DAMAGE");   
-        _currentHp -= damage;
-        if (_currentHp <= 0)
-        {
-            Die();
-        }
-        
+        healthComponent.TakeDamage(damage);
     }
-
+    
     private void Move()
     {
+        FindSurvivor();
+        transform.position += transform.forward * (speed * Time.deltaTime);
+    }
+    
+    // ----- PRIVATE HEALPER -----
+    private void FindSurvivor()
+    {
+        // This method is make enemy rotate to survivor or look to -z
         Vector3 targetDirection;
         if (_target == null)
         {
@@ -58,15 +52,7 @@ public class Enemy : MonoBehaviour
             targetDirection.Normalize();
             LookAhead(targetDirection);
         }
-        transform.position += transform.forward * (speed * Time.deltaTime);
     }
-    
-    // ----- PRIVATE HEALPER -----
-    private void Die()
-    {
-        Destroy(gameObject);
-    }
-    
     private Transform FindNearestTarget()
     {
         //Debug.Log("FindNearestTarget");
