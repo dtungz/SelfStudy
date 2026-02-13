@@ -14,10 +14,16 @@ public class HealthComponent : MonoBehaviour
     public void TakeDamage(float damage)
     {
         _currentHp -= damage;
+        //Debug.Log("Damaged by frame " + Time.frameCount + " caller: " + gameObject.name);
         if (_currentHp <= 0)
         {
             Die();
         }
+    }
+
+    public void Heal(float amount)
+    {
+        _currentHp = Mathf.Min(_currentHp + amount, health);
     }
 
     private void Die()

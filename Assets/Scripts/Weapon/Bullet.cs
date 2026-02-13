@@ -21,10 +21,10 @@ public class Bullet : GameUnit
 
     private void OnTriggerEnter(Collider other)
     {
-        Enemy enemy = other.GetComponent<Enemy>();
-        if (enemy != null)
+        EnemyBase enemyBase = other.GetComponent<EnemyBase>();
+        if (enemyBase != null)
         {
-            enemy.TakeDamage(_damage);
+            enemyBase.TakeDamage(_damage);
             OnDespawn(0);
         }
     }

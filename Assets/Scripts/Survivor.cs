@@ -1,52 +1,60 @@
-using System;
-using System.Numerics;
+using Interfaces;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
-public class Survivor : MonoBehaviour
+public class Survivor : MonoBehaviour, IDamageable
 {
     [Header("CONFIG")]
-    [SerializeField] private float hp = 100f;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float fireRate;
-    private float _currentHp = 100f;
     
     [Header("REFERENCES")]
+    [SerializeField] private HealthComponent healthComponent;
+    [SerializeField] private EntityManager entityManager;
     [SerializeField] private CharacterController controller;
     [SerializeField] private Weapon weapon;
     
-    public float Hp => hp;
     public float MoveSpeed => moveSpeed;
     public float FireRate => fireRate;
-    
+
+    private void OnEnable()
+    {
+        entityManager.AddSurvivor(transform);
+    }
+
+    private void OnDisable()
+    {
+        entityManager.RemoveSurvivor(transform);
+    }
 
     private void Start()
     {
-        _currentHp = hp;
         weapon.Init(fireRate);
     }
 
     public void TakeDamage(float amount)
     {
-        _currentHp -= amount;
-        if (_currentHp <= 0)
-        {
-            Die();
-        }
+        healthComponent.TakeDamage(amount);
     }
 
     public void Heal(float amount)
     {
-        _currentHp = Mathf.Min(_currentHp + amount, Hp);
+        healthComponent.Heal(amount);
     }
 
     public void Die()
     {
-        //TODO : Die
+        Destroy(gameObject);
     }
 
     public void MoveHorizontal(float direction)
     {
         controller.Move(Vector3.right * (direction * moveSpeed * Time.deltaTime));
+    }
+
+    public void Knockkback(Vector3 sourceKnock)
+    {
+        Vector3 backDirection = transform.position - sourceKnock;
+        controller.Move(backDirection.normalized * (moveSpeed * Time.deltaTime));
     }
 }
