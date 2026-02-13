@@ -3,19 +3,28 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("FIND SURVIVOR")]
-    [SerializeField] private LayerMask survivorLayer;
-    [SerializeField] private float findRadius;
+    [Header("REFERENCES")]
     [SerializeField] private HealthComponent healthComponent;
+    [SerializeField] private EntityManager entityManager;
+    
     
     [Header("CONFIG")]
     [SerializeField] private float speed;
     [SerializeField] private float rotateSpeed;
     [SerializeField] private float damage;
-    private Transform _target = null;
-    
+    [SerializeField] private float findSurvivorCooldown;
+    private Transform _target;
+    private float _timeSinceLastFindSurvivor;
+
+    private void Start()
+    {
+        _target = null;
+        _timeSinceLastFindSurvivor = 0f;
+    }
+
     private void Update()
     {
+        FindNearestTarget();
         Move();
     }
 
@@ -55,18 +64,11 @@ public class Enemy : MonoBehaviour
     }
     private Transform FindNearestTarget()
     {
-        //Debug.Log("FindNearestTarget");
-        Collider[] survivors = Physics.OverlapSphere(transform.position, findRadius, survivorLayer);
-        Transform targetTf = null;
-        for (int i = 0; i < survivors.Length; i++)
+        while (_timeSinceLastFindSurvivor < findSurvivorCooldown)
         {
-            if (targetTf == null || Vector3.Distance(targetTf.position, transform.position) >
-                Vector3.Distance(survivors[i].transform.position, transform.position))
-            {
-                targetTf = survivors[i].transform;
-            }
+            _timeSinceLastFindSurvivor += Time.deltaTime;
         }
-        return targetTf;
+        return entityManager.GetSurvivorNearsest(transform.position);
     }
 
     private void LookAhead(Vector3 direction)
@@ -78,12 +80,5 @@ public class Enemy : MonoBehaviour
             targetRot,
             rotateSpeed * Time.deltaTime
         );
-    }
-    
-    // ----- VISUAL DEBUG -----
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, findRadius);
     }
 }
