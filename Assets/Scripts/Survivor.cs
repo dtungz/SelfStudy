@@ -6,7 +6,6 @@ public class Survivor : MonoBehaviour, IDamageable
 {
     [Header("CONFIG")]
     [SerializeField] private float moveSpeed;
-    [SerializeField] private float fireRate;
     
     [Header("REFERENCES")]
     [SerializeField] private HealthComponent healthComponent;
@@ -15,7 +14,6 @@ public class Survivor : MonoBehaviour, IDamageable
     [SerializeField] private Weapon weapon;
     
     public float MoveSpeed => moveSpeed;
-    public float FireRate => fireRate;
 
     private void OnEnable()
     {
@@ -26,12 +24,6 @@ public class Survivor : MonoBehaviour, IDamageable
     {
         entityManager.RemoveSurvivor(transform);
     }
-
-    private void Start()
-    {
-        weapon.Init(fireRate);
-    }
-
     public void TakeDamage(float amount)
     {
         healthComponent.TakeDamage(amount);
@@ -50,11 +42,5 @@ public class Survivor : MonoBehaviour, IDamageable
     public void MoveHorizontal(float direction)
     {
         controller.Move(Vector3.right * (direction * moveSpeed * Time.deltaTime));
-    }
-
-    public void Knockkback(Vector3 sourceKnock)
-    {
-        Vector3 backDirection = transform.position - sourceKnock;
-        controller.Move(backDirection.normalized * (moveSpeed * Time.deltaTime));
     }
 }

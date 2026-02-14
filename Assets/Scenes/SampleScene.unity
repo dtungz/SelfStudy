@@ -164,6 +164,7 @@ GameObject:
   - component: {fileID: 50197849}
   - component: {fileID: 50197852}
   - component: {fileID: 50197851}
+  - component: {fileID: 50197853}
   m_Layer: 0
   m_Name: Balo
   m_TagString: Untagged
@@ -243,6 +244,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 50197848}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &50197853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 50197848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb808858aca84f4481e58774d23c716, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChangeColorBaloWhenEnemyAttack
 --- !u!1 &69454881
 GameObject:
   m_ObjectHideFlags: 0
@@ -617,6 +630,7 @@ GameObject:
   - component: {fileID: 382533383}
   - component: {fileID: 382533385}
   - component: {fileID: 382533384}
+  - component: {fileID: 382533386}
   m_Layer: 0
   m_Name: Balo
   m_TagString: Untagged
@@ -696,6 +710,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 382533382}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &382533386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 382533382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb808858aca84f4481e58774d23c716, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChangeColorBaloWhenEnemyAttack
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1136,6 +1162,7 @@ MonoBehaviour:
   survivorLayer:
     serializedVersion: 2
     m_Bits: 64
+  whenEnemyAttack: {fileID: 1867597845}
   config: {fileID: 11400000, guid: b32d18f577ed66f4e99fc217f5947a08, type: 2}
 --- !u!1 &568246093
 GameObject:
@@ -1377,6 +1404,7 @@ MonoBehaviour:
   survivorLayer:
     serializedVersion: 2
     m_Bits: 64
+  whenEnemyAttack: {fileID: 382533386}
   config: {fileID: 11400000, guid: 7636191f0f547ab4c8cedb73df43f5ac, type: 2}
 --- !u!1 &832575517
 GameObject:
@@ -1685,6 +1713,7 @@ MonoBehaviour:
   survivorLayer:
     serializedVersion: 2
     m_Bits: 64
+  whenEnemyAttack: {fileID: 50197853}
   config: {fileID: 11400000, guid: f87aff110ee60604780bd1d2e8f8b5d0, type: 2}
 --- !u!1 &1230972529
 GameObject:
@@ -1700,6 +1729,7 @@ GameObject:
   - component: {fileID: 1230972532}
   - component: {fileID: 1230972531}
   - component: {fileID: 1230972535}
+  - component: {fileID: 1230972536}
   m_Layer: 0
   m_Name: Gun
   m_TagString: Untagged
@@ -1734,9 +1764,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b445e80b3ab74b742be95588acb02ff4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
-  currentWeaponType: 1
-  weapons:
+  weaponType: 2
+  weaponObject:
   - {fileID: 1230972535}
+  - {fileID: 1230972536}
 --- !u!65 &1230972532
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1824,11 +1855,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 1230972529}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9d76fac6f3d28f47994dbe3cc9850c9, type: 3}
+  m_Script: {fileID: 11500000, guid: 884ac8d47ee44e4793b88a3ae675cbae, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Piston
-  _weaponType: 1
+  m_EditorClassIdentifier: Assembly-CSharp::PistonRefactor
   damage: 20
+  cooldown: 0.25
+--- !u!114 &1230972536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1230972529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11942bdbfebaffd4e96a5f07a9ebba72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WP_Shotgun
+  damage: 30
+  cooldown: 0.5
+  bullets: 6
+  angle: 30
 --- !u!1 &1249261544
 GameObject:
   m_ObjectHideFlags: 0
@@ -2072,7 +2119,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Solider
   moveSpeed: 20
-  fireRate: 0.2
   healthComponent: {fileID: 1785760585}
   entityManager: {fileID: 69454883}
   controller: {fileID: 1785760580}
@@ -2101,6 +2147,7 @@ GameObject:
   - component: {fileID: 1867597842}
   - component: {fileID: 1867597844}
   - component: {fileID: 1867597843}
+  - component: {fileID: 1867597845}
   m_Layer: 0
   m_Name: Balo
   m_TagString: Untagged
@@ -2180,6 +2227,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1867597841}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1867597845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1867597841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb808858aca84f4481e58774d23c716, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChangeColorBaloWhenEnemyAttack
 --- !u!1 &1907011482
 GameObject:
   m_ObjectHideFlags: 0
