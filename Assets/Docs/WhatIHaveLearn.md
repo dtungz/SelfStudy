@@ -374,3 +374,112 @@ Bạn vừa implement **Strategy Pattern** mà không biết!
     - Đã đăng kí IWeapon thì phải Attack()
 - (4) : Như cái (2)
 - (5) : Đối với kế thừa thì phụ thuộc rất nhiều vào base class, còn Interface thì không
+
+### Check List
+#### Module 1: Modeling
+- [x] Hiểu Class là công cụ modeling, không phải lý thuyết trừu tượng
+- [x] Biết khi nào dùng `private` vs `public`
+- [x] Hiểu **Encapsulation = bảo vệ state + expose behavior**
+- [x] Biết tại sao không nên truy cập trực tiếp vào fields
+- [x] Nhận ra **"what varies"** trong code
+
+#### Module 2: Variation
+- [x] Phân biệt được khi nào dùng Inheritance vs Interface
+- [x] Hiểu vấn đề của deep inheritance hierarchy
+- [x] Biết **Composition = kết hợp nhiều behaviors nhỏ**
+- [x] Hiểu **"Program to interface"** nghĩa là gì
+- [x] Nhận ra khi inheritance gây ra vấn đề (như SimUDuck!)
+
+#### Module 3: Dependency
+- [x] Nhận ra được **tight coupling** trong code
+- [ ] Biết dùng **Dependency Injection đơn giản** thay vì `FindObjectOfType`
+- [x] Hiểu **Events giúp loose coupling** như thế nào
+- [x] Biết tách abstraction (interface) để giảm phụ thuộc
+- [ ] Hiểu **Law of Demeter** — chỉ nói chuyện với "friends" trực tiếp
+
+---
+
+### **PHẢI ĐỌC**
+| Tài liệu | Chương/Phần | Lý do                                     |
+|----------|-------------|-------------------------------------------|
+| Head First Design Patterns | Chapter 1: Intro (trang 1-30) | Hiểu SimUDuck story và 4 design maxims    |
+| Game Programming Patterns | [Architecture](../RESOURCES.md#phase-1-oop-foundation) | Context về game dev (Lên github để đọc) |
+
+### Tự kiểm tra
+#### Nền tảng
+1. **Class vs Object:** Khác nhau như thế nào?
+- Class là các model của nhân vật, kiểu như là các cách định nghĩa cho 1 nhân vật
+- Object là nhân vật
+2. **Encapsulation:** Tại sao cần `private`? (Hint: không chỉ về security!)
+- Vấn đề đầu tiên vẫn là về bảo mật thông tin, việc không public khiến cho các class khác có thể truy cập vào những dữ liệu không nên được truy cập. VD như thay vì trừ máu qua hàm TakeDamage() thì lại truy cập và trừ thẳng vào Hp
+- Giảm coupling, kiểu như truy cập trừ máu thẳng vào Hp thay vì thông qua method TakeDamage thì việc thay đổi logic trừ máu sẽ bắt buộc phải sửa ở mọi script trừ máu, thay vì việc chỉ cần sửa trong mỗi method takedamage
+#### Variation
+3. **Inheritance:** Khi nào KHÔNG nên dùng? Cho ví dụ từ bài tập.
+- Không nên dùng chỉ đề copy code : Bàn đầu thì Weapon của mình được kế thừa từ weapon base, và mình code sẵn 1 hàm attack base, nhưng sau đó việc sinh ra cả laser khiến attack đó không còn đúng với laser nữa
+- Khi Object cần mix behavior : Cũng bắt nguồn từ Laser khi nó có thể bắn laser thay vì bullet
+- Hirarchy phức tạp : Dễ bug nhưng chưa code thử, mình chỉ biết là việc kế thừa càng sâu thì việc fix bug hay mở rộng càng khó
+4. **Interface:** Khác gì với abstract class? Khi nào dùng cái nào?
+- Interface là một bản hợp đồng yêu cầu các object phải kế thừa các điều khoản, và đã là một object thì có thể kí nhiều bản hợp đồng.
+- Abstract class thì là một class cha, chỉ yêu cầu kế thừa các abtract method, nhưng vì là class cha nên chỉ đươc 1 class
+  - Một ví dụ khá dễ hiểu như chúng ta có một Enemy thì chúng ta có thể kí hợp đồng nó với IMoveable để Move, IDamageable để nhận damage. Nhưng mặt khác, nếu ta dùng EnemyBase thì ok Enemy có thể di chuyển và nhận damage. Nhưng nếu mở rộng là enemy đó có thể tấn công thì sao, chúng ta sẽ phải thêm 1 hàm tấn công cho EnemyBase. Nhưng nếu 1 trong số các enemy không thể di chuyển thì sao? thì chúng ta sẽ lại phải Override hàm move và trong thằng đó chúng ta lại để trống hàm Move() và không sử dụng
+  - Từ đó việc EnemyBase phình to ra rồi sẽ có những Method không được dùng sẽ lại override, thằng có hàm này thằng có hàm,....
+  - Trong tựa game đang làm, mình để Enemybase vì được xác định rõ các tính chất IS-A và các enemy con đều có những đặc điểm của thằng cha như di chuyển, tấn công và nhận damage (và do đề bài yêu cầu :L)
+5. **Composition:** Tại sao Survivor có `IWeapon` thay vì kế thừa từ Weapon?
+- Theo mình, IWeapon là một bản hợp đồng xác nhận rằng object đó sẽ có thể attack, việc object đó attack thế nào thì không phải việc của mình. Trong game, ví dụ như piston và Shotgun thì oke, chúng đều dùng bullet và hoàn toàn có thể override. Nhưng laser thì hoàn toàn khác, cách gây damage của laser là sử dụng 1 raycast, yêu cầu thêm các field khác. Chả lẽ mình sẽ thêm laserRange cho Piston và không dùng nó. Nhưng nếu không thêm laserRange thì không thể attack bằng laser. Oke mình giả sử như mình sẽ override và viết lại toàn bộ, thêm toàn bộ các field còn thiếu vào 1 class WP_Laser. vậy thì nếu trong tương lai chúng ta muốn sur cầm vũ khí cận chiến như chiếc tông lào của mẹ chúng ta chẳng hạn, và chiếc dép có cả đánh xa và gần đi thì chả lẽ ta lại thêm định nghĩa đánh gần và đánh xa vào trong Base
+#### Dependency
+6. **Coupling:** Làm sao **nhận ra** code đang tight coupling?
+- Dễ nhận ra nhất là việc chúng ta chỉ sửa 1 dòng code nhưng lại đỏ lòm tất cả các script khác
+- Hoặc code siêu cấp khó mở rộng, kiểu như weapon đi, để thêm 1 vũ khí thì chúng ta phải sửa trong weapon, WP_Vũ khí đó, interface, sur.... thì tức là bạn đang tight coupling rồi đó
+7. **FindObjectOfType:** Tại sao là code smell? Thay bằng gì?
+- Dề dàng thấy nhất là vấn đề performance, việc gọi hàm này nó sẽ tìm kiếm cả scene để kiếm ra thằng T
+- Rất phụ thuộc vào T nhưng việc phụ thuộc đó lại không được thể hiện ra bên ngoài
+  - Ví dụ khi chúng ta cần tìm 1 thằng survivor nhưng tại thời điểm gọi, survivor chx được sinh ra => null kể cả sau đó 1frame survivor được sinh ra
+- Có thể thay thế chúng = Dependency Injection, SingleTon, interface injection, event driven
+  - Init(...) hoặc serializefield (dependency) : kéo thả hoặc thằng khởi tạo init vào
+  - IWeapon weapon xong Equip(IWeapon){this.weapon = weapon;} (interface) : Truyền theo interface
+  - Player.Instance (singleton) : Instance ra (Cái này mình thường dùng cho các Manager, điều này học được từ người bạn cùng CLB)
+  - Enemy.OnDeath += HandleDeath (Event) : Kiểu thằng được khởi tạo có 1 cái public event OnDeath, thì lúc thằng cha khởi tạo thì mình sẽ đăng kí kiểu obj.OnDeath += SpawnNewObjWhenOldObjDeath. thì lúc obj chết thì trước khí Destroy sẽ Invoke cái OnDeath lên.
+8. **Events:** Tại sao UI fire events thay vì gọi trực tiếp GameManager?
+- Vì tăng sự phụ thuộc giữa UI và Manager. Kiểu như nếu ta sửa logic của UI hoặc của Manager thì ta cũng sẽ phải sửa ở bên còn lại. Thay vào đó mình nghĩ nên cho thằng Manager đăng kí sự kiện của start game, khi đó thẳng UI không biết là thằng nào đăng kí, chỉ khi nào mà cần gì thì sẽ phát tín hiệu, những thẳng nhận được tín hiệu sẽ chạy method, còn thằng manager thì không cần biết khi thằng nào phát tín hiệu, chỉ cần biết khi nhận tín hiệu thì chạy hàm
+- Ví dụ
+  - Trong UI
+```C#
+public static event Action OnStartClicked;
+
+public void OnClickStart()
+{
+    OnStartClicked?.Invoke();
+}
+
+```
+
+- Trong GameManager `UIStartButton.OnStartClicked += StartGame;`
+
+- Một cách khá phổ biến với Event là EventChannelSO, chúng ta sẽ đăng kí sự kiện qua 1 SO hoặc là Event bus, giảm coupling vô cùng mạnh mẽ (i think so)
+
+
+9. **Law of Demeter:** Tại sao Slot không nên truy cập `Food.Config.Type`?
+- Mình sẽ tư duy ngược một tẹo hehe. Kiểu như đặt câu hỏi : Slot truy cập vào Food.Config.Type để làm gì?
+- Khi này mình thấy được việc Slot cần chỉ là Type của nó, ngoài ra không cần gì khác.
+- VẬY sẽ thế nào Type của Food không còn trong slot? Khi đó tất cả những chỗ mà Slot truy cập như trên sẽ phải sửa. Mình nghĩ là Food sẽ phải đưa ra Type của bản thân mình, kiểu public Type => type hay GetType()
+#### Design Thinking
+10. **"What varies?":** Trong Survivor + Weapon, cái gì hay thay đổi?
+- Survivor
+  - currentHealth
+  - Weapon
+  - MoveSpeed
+- Weapon
+  - Attack : Phương thức tấn công, bắn nhanh, bắn lan, bắn liên tục
+  - Config
+    - Cooldown
+    - Damage : đối với những Weapon kế thừa IModifiable
+    - Type
+    - Góc bắn (đối với shotgun)
+    - laserRange (đối với laser)
+11. **Tradeoffs:** Khi nào inheritance vẫn là lựa chọn tốt?
+- Khi ta đã xác định quan hệ IS-A rõ ràng
+- Subclass chia sẻ các hành vi
+- Không kế thừa quá xâu
+  - Ví dụ khi ta đã xác định được Con chó có các hành vi chính như sủa, đi, vệ sinh, nhai
+  - Từ đó ta có thể cho nhưng con chó khác kế thừa base như chó Shiba sủa gâu gâu, đi 4 chân, vệ sinh ở WC, nhai hạt. Còn chó bạn thân thì sủa cc, đi 4 chân, đi vệ sinh ở bụi cỏ, nhai sách vở.
+  - NHƯNG ta sẽ xác định là không kế thừa các thành phần như chó con hay chó cha vì nó không cần thiết và điều đó cũng sẽ nâng độ phụ thuộc lên
