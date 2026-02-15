@@ -375,22 +375,278 @@ Bạn vừa implement **Strategy Pattern** mà không biết!
 - (4) : Như cái (2)
 - (5) : Đối với kế thừa thì phụ thuộc rất nhiều vào base class, còn Interface thì không
 
-### Check List
-#### Module 1: Modeling
+## Module 3
+> *"Strive for loosely coupled designs between objects that interact."*  
+> — Head First Design Patterns
+
+Hiểu coupling và học cách giảm nó.
+- Vấn đề từ Module 1
+
+Nhớ lại code Zombie:
+
+```csharp
+public class Zombie : MonoBehaviour
+{
+    private void Start()
+    {
+        target = FindObjectOfType<Survivor>().transform;
+    }
+}
+```
+
+(Mình đã không code như thế heh)
+
+| Vấn đề | Tại sao xấu? |
+|--------|-------------|
+| Zombie phụ thuộc trực tiếp vào Survivor | Không test được riêng |
+| `FindObjectOfType` chậm | Performance issue |
+| Nếu Survivor chưa spawn | NullReferenceException |
+| Đổi tên Survivor class | Phải sửa tất cả Zombie |
+
+### Loose Coupling là gì?
+
+> Objects biết **ít nhất có thể** về nhau nhưng vẫn hoạt động cùng nhau.
+
+| Tight Coupling | Loose Coupling |
+|----------------|----------------|
+| A biết chính xác B là gì | A biết B "can do" something |
+| A tự tìm B | B được đưa vào A |
+| Thay B → sửa A | Thay B → A không đổi |
+
+### Task Coupling
+#### Mục tiêu :
+  - Nhận diện **tight coupling** trong code
+  - Học **Dependency Injection đơn giản** — kỹ thuật inject dependencies mà không cần framework
+  - Học **Interface Abstraction** — phụ thuộc abstraction thay vì implementation
+  - **Preview**: Dependency Inversion Principle (Phase 2)
+##### Phần 1 : Nhận diện
+```C#
+public class Zombie : MonoBehaviour
+{
+    private Transform target;
+    
+    private void Start()
+    {
+        target = FindObjectOfType<Survivor>().transform;
+    }
+}
+
+public class GameManager : MonoBehaviour
+{
+    private void Update()
+    {
+        var survivor = FindObjectOfType<Survivor>();
+        if (survivor.Health <= 0)
+        {
+            EndGame();
+        }
+    }
+}
+
+public class UI : MonoBehaviour
+{
+    private GameManager manager;
+    
+    private void OnPlayClicked()
+    {
+        manager.StartGame();
+    }
+}
+```
+
+| Code | Vấn đề | Smell |
+|------|--------|-------|
+| `FindObjectOfType<Survivor>()` | Phụ thuộc vào scene | 🔴 Tight coupling |
+| `survivor.Health` | GameManager biết quá nhiều về Survivor | 🔴 Knowledge coupling |
+| `manager.StartGame()` | UI phụ thuộc vào GameManager cụ thể | 🔴 Direct dependency |
+
+
+- (1) : Thứ nhất là phụ thuộc vào scene như đã đề cập, nếu survivor không có trong scene thì coi như null kể có ngay sau đó được instance sau đó 1frame. Ngoài ra thì còn vấn đề hiệu suất khi duyệt toàn bộ scene
+- (2) : Có thực sự là player sẽ cần biết Manager là ai? Giống như đầu bếp thì đâu cần biết khách hàng là ai, đầu bếp sẽ chỉ cần làm công việc của mình. Quay lại, UI ở đây sẽ là một người đầu bếp còn Manager sẽ là người quản lý các món ăn mang ra cho khách hàng. Khi UI làm xong việc của mình cũng giống như đầu bếp vậy, chỉ cần đặt món ở đó xong bấm nút (tương đương với việc UI Invoke sự kiện), khí đó sẽ có một thông báo vang lên như kiểu "Ê tao nấu xong món rồi". Thì lúc này thg UI sẽ chả cần biết chuyện gì xảy ra, nhưng thằng Manager giống như là một người quản lý món ăn mang ra cho khách, khi nghe thông báo thi Manager sẽ phải chạy ra và thực hiện nhiệm vụ của mình, tức là làm nhiệm vụ đã đăng kí sự kiện
+##### Phần 2 : Dependency Injection (Basic)
+> [!IMPORTANT]
+> **Dependency Injection (DI) đơn giản** không cần Zenject hay framework phức tạp!  
+> Chỉ cần: **Thay vì tự tìm dependencies, được đưa vào từ bên ngoài**.
+
+> *"Don't call us, we'll call you."* — Hollywood Principle
+
+- Theo git mình đọc thì thay vì chúng ta cho Enemy kiếm, thì thay vào đó ta sẽ Init target vào cho Enemy
+  
+
+**❌ Trước:**
+```csharp
+public class Zombie : MonoBehaviour
+{
+    private void Start()
+    {
+        target = FindObjectOfType<Survivor>().transform;
+    }
+}
+```
+
+**✅ Sau — DI qua Method:**
+```csharp
+public class Zombie : MonoBehaviour
+{
+    private Transform target;
+    
+    // Dependency được "inject" vào thông qua method
+    public void Initialize(Transform target)
+    {
+        this.target = target;
+    }
+}
+```
+- NOTE : Trong code của mình thì mình dùng 1 Entity Manager và ref Entity Manager cho Enemy rồi mỗi lần target == null thì mình gọi hàm findnearessur.
+  - Có lẽ mình sẽ sửa 1 chút, khi mà spawn thì mình sẽ truyền vào cho enemy player gần nhất và đăng kí 1 sự kiện là target thì tìm kiếm enemy, khi mà enemy bị target null thì sẽ báo cái sự kiện đó lên, khi đó thì Manager sẽ nhận sự kiện và lại kiếm cho Enemy đó thằng player tiếp theo
+
+- 3 Cách DI đơn giản :
+
+| Cách | Syntax | Khi nào dùng |
+|------|--------|--------------|
+| **Method Injection** | `Initialize(dependency)` | Dependency có thể thay đổi |
+| **Constructor/Awake** | Set trong constructor | Immutable dependency |
+| **Inspector** | `[SerializeField]` | Design-time configuration |
+
+- Sau khi đọc xong thì tôi lại nghĩ về cái Enemy được ref đến Entity Manager thì mình lại nghĩ đến cái ref Entity Manager cho Enemy và Survivor của mình =)))
+
+```C#
+// Method Injection
+zombie.Initialize(target);
+
+// Inspector Injection
+[SerializeField] private Transform target;
+
+// Factory Injection (trong method)
+Zombie Create(Transform target) => new Zombie(target);
+```
+
+| Before | After |
+|--------|-------|
+| Zombie tự tìm Survivor | Spawner đưa target vào |
+| Khó test | Dễ test (inject mock target) |
+| Zombie phụ thuộc Survivor | Zombie chỉ cần Transform |
+
+- Hmmmmm đối với tựa game đang được làm thì tôi nghĩ sẽ sửa sang EntityManager sẽ gán Init cho Enemy và Sur vì 1 tỉ entity thì ngồi kéo tay = die (mặc dù có thể object pool prefabs) (mà hình như prefabs sẽ không lưu ref nếu ref nằm trên scene...)
+##### Phần 3 : Interface Abstraction
+- Phần này nói về việc kiểu như take damage nếu mình cho getcomponent<zombie> và enemy.takedame thì sau này nếu mở rộng, không chỉ có mỗi zombie thì game có thể sẽ toang
+  - Giải pháp là cho nhân idamageable thì từ đó có thể nhận dame thẳng từ GetComponent<IDamageable>
+- Có vẻ phần này đang nói về việc mình sẽ sử dụng các class public, để giải thích theo ý hiểu thì hơi khó nên mình sẽ đưa qua ví dụ
+
+ ❌ CẤM: Slot truy cập trực tiếp Type của Food
+
+```csharp
+public class Slot : MonoBehaviour
+{
+    public Food food;
+    
+    public bool CanMatch(Slot other)
+    {
+        // ❌ Slot "biết quá nhiều" về internal của Food
+        return food.config.type == other.food.config.type;
+    }
+}
+```
+
+ ✅ NÊN: Thông qua Food's public interface
+
+```csharp
+public class Food : MonoBehaviour
+{
+    [SerializeField] private FoodConfig config;
+    
+    // Food expose method, encapsulate internal logic
+    public bool IsSameType(Food other)
+    {
+        return config.type == other.config.type;
+    }
+}
+
+public class Slot : MonoBehaviour
+{
+    public Food food;
+    
+    public bool CanMatch(Slot other)
+    {
+        // ✅ Slot chỉ gọi Food's public method
+        return food.IsSameType(other.food);
+    }
+}
+```
+
+> [!IMPORTANT]
+> **Law of Demeter (LoD)**: Một object chỉ nên nói chuyện với "friends" trực tiếp của nó:
+> - Slot → Food ✅
+> - Slot → Food.Config ❌
+> - Slot → Food.Config.Type ❌❌
+
+##### Phần 4 : Đây sẽ là Preview cho task tiếp theo : Event
+##### Phần 5 : Thực hành
+- [x] Bước 1: Refactor Zombie
+  - Sửa Zombie để nhận target qua `Initialize()`.
+- [x] Bước 2: Tạo IDamageable
+  - Tách damage logic ra interface, áp dụng cho Zombie và Survivor.
+- [x] Bước 3: Chuẩn bị cho Events
+  - Xem [Task: Events](./Task_Events.md) để học chi tiết về C# Events.
+- Check
+  - ✅ Zombie không dùng `FindObjectOfType`
+  - ✅ Bullet dùng `IDamageable`, không dùng Zombie trực tiếp
+  - ✅ Hiểu concept của Events (chi tiết ở task tiếp)
+
+> *"Depend on abstractions, not on concretions."*
+
+| Before | After |
+|--------|-------|
+| Bullet → Zombie | Bullet → IDamageable ← Zombie |
+| High-level depends on low-level | Both depend on abstraction |
+
+Đây là **DIP (Dependency Inversion Principle)** — sẽ học chi tiết ở Phase 2!
+#### Kiến thức rút ra
+
+| Khái niệm | Áp dụng |
+|-----------|---------|
+| **DI đơn giản** | Được đưa vào thay vì tự tìm (không cần framework!) |
+| **Interface abstraction** | Phụ thuộc abstraction, không phải implementation |
+| **Law of Demeter** | Chỉ nói chuyện với friends trực tiếp |
+| **Events preview** | Loose coupling qua event system |
+| **DIP preview** | Depend on interfaces |
+
+- (1) : Init, SerializeField, Constructor
+- (2) : Nên làm việc với Interface, Abstract thay vì class cụ thể (VD : IDamageable thay vì FastEnemy)
+- (3) : Hiểu đơn giản thì truy cập tối đa vào a.b (a là nó còn b là một field, 1 method, 1 object nó tạo ra...), tránh việc truy cập a.b.c.d
+- (4) : Sử dụng Event để giảm sự phụ thuộc
+- (5) : Đọc bên trên hehe
+
+
+#### Tóm tắt coupling
+
+| Tight Coupling | Loose Coupling |
+|----------------|----------------|
+| `FindObjectOfType` | Method/Inspector injection |
+| Direct class reference | Interface |
+| Direct method call | Events |
+| Hard to test | Easy to test |
+| Change ripples | Change isolated |
+
+- Qua so sánh thì Loose Coupling tránh việc các object biết nhau quá nhiều, tránh/ giảm thiểu sự phụ thuộc hết sức có thể
+
+
+## Check List
+### Module 1: Modeling
 - [x] Hiểu Class là công cụ modeling, không phải lý thuyết trừu tượng
 - [x] Biết khi nào dùng `private` vs `public`
 - [x] Hiểu **Encapsulation = bảo vệ state + expose behavior**
 - [x] Biết tại sao không nên truy cập trực tiếp vào fields
 - [x] Nhận ra **"what varies"** trong code
 
-#### Module 2: Variation
+### Module 2: Variation
 - [x] Phân biệt được khi nào dùng Inheritance vs Interface
 - [x] Hiểu vấn đề của deep inheritance hierarchy
 - [x] Biết **Composition = kết hợp nhiều behaviors nhỏ**
 - [x] Hiểu **"Program to interface"** nghĩa là gì
 - [x] Nhận ra khi inheritance gây ra vấn đề (như SimUDuck!)
 
-#### Module 3: Dependency
+### Module 3: Dependency
 - [x] Nhận ra được **tight coupling** trong code
 - [ ] Biết dùng **Dependency Injection đơn giản** thay vì `FindObjectOfType`
 - [x] Hiểu **Events giúp loose coupling** như thế nào

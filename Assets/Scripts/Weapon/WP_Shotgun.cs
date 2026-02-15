@@ -42,7 +42,7 @@ public class WP_Shotgun : MonoBehaviour, IWeapon
             float angle =  startAngle + stepAngle * i;
             Quaternion rot = Quaternion.Euler(0, angle, 0) * transform.rotation;
             Bullet bullet = PoolManager.Spawn<Bullet>(PoolType.bullet,  transform.position, rot);
-            bullet.Init(3f, damage);
+            bullet.Init(3f, damage, FactionType.Survivor);
         }
     }
 }

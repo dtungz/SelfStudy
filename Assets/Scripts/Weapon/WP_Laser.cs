@@ -1,4 +1,5 @@
 using System;
+using Interfaces;
 using UnityEngine;
 
 public class WP_Laser : MonoBehaviour, IWeapon
@@ -15,6 +16,7 @@ public class WP_Laser : MonoBehaviour, IWeapon
     public WeaponType Type => WeaponType.Laser;
     private Ray ray;
     private RaycastHit[] hits = new RaycastHit[300];
+    
     
 
     private void Start()
@@ -43,6 +45,7 @@ public class WP_Laser : MonoBehaviour, IWeapon
     public void Unequip()
     {
         lineRenderer.enabled = false;
+        
     }
 
     private void DamageAllInPath()
@@ -51,7 +54,7 @@ public class WP_Laser : MonoBehaviour, IWeapon
         int size = Physics.RaycastNonAlloc(ray, hits, laserRange,enemyLayer);
         for (int i = 0; i < size; i++ )
         {
-            if (hits[i].collider.TryGetComponent<EnemyBase>(out var enemy))
+            if (hits[i].collider.TryGetComponent<IDamageable>(out var enemy))
             {
                 enemy.TakeDamage(damage * Time.deltaTime);
             }

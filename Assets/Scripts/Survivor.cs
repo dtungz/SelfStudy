@@ -12,6 +12,7 @@ public class Survivor : MonoBehaviour, IDamageable
     [SerializeField] private EntityManager entityManager;
     [SerializeField] private CharacterController controller;
     [SerializeField] private Weapon weapon;
+    public FactionType Faction => FactionType.Survivor;
     
     public float MoveSpeed => moveSpeed;
 

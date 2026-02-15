@@ -1,15 +1,17 @@
 using System;
+using Interfaces;
 using UnityEngine;
 
 public class Bullet : GameUnit
 {
     [SerializeField] private float speed;
-    private float _lifeTime;
     private float _damage;
+    private FactionType _ownerType;
 
-    public void Init(float _lifeTime, float damage)
+    public void Init(float _lifeTime, float damage,  FactionType ownerType)
     {
-        this._lifeTime = _lifeTime;
+        CancelInvoke();
+        _ownerType = ownerType;
         _damage = damage;
         OnDespawn(_lifeTime);
     }
@@ -21,10 +23,11 @@ public class Bullet : GameUnit
 
     private void OnTriggerEnter(Collider other)
     {
-        EnemyBase enemyBase = other.GetComponent<EnemyBase>();
-        if (enemyBase != null)
+        IDamageable target = other.GetComponent<IDamageable>();
+        if (target != null && target.Faction != _ownerType)
         {
-            enemyBase.TakeDamage(_damage);
+            target.TakeDamage(_damage);
+            CancelInvoke();
             OnDespawn(0);
         }
     }

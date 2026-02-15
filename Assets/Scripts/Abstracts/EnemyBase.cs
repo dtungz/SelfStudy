@@ -1,7 +1,9 @@
 using System;
+using Interfaces;
 using UnityEngine;
+using UnityEngine.Events;
 
-public abstract class EnemyBase : MonoBehaviour
+public abstract class EnemyBase : MonoBehaviour, IDamageable
 {
     public enum ZombieType{Basic, Fast, Tank}
     
@@ -11,7 +13,6 @@ public abstract class EnemyBase : MonoBehaviour
     
     [Header("REFERENCES")]
     [SerializeField] protected HealthComponent healthComponent;
-    [SerializeField] protected EntityManager entityManager;
     [SerializeField] protected Transform attackPoint;
     [SerializeField] protected LayerMask survivorLayer;
     [SerializeField] protected ChangeColorBaloWhenEnemyAttack whenEnemyAttack;
@@ -30,6 +31,9 @@ public abstract class EnemyBase : MonoBehaviour
     protected Transform _target;
     protected float _attackTimer;
     protected float _findTimer;
+    
+    public UnityEvent<EnemyBase> getTarget;
+    public FactionType Faction => FactionType.Enemy;
 
     private void Awake()
     {
@@ -72,7 +76,7 @@ public abstract class EnemyBase : MonoBehaviour
         if (_target == null)
         {
             targetDirection = Vector3.back;
-            _target = FindNearestTarget();
+            getTarget?.Invoke(this);
         }
         else
         {
@@ -97,15 +101,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void OnMove(){ }
     
     // ----- HEALPER -----
-    private Transform FindNearestTarget()
-    {
-        _findTimer += Time.deltaTime;
-        if (_findTimer < FindSurvivorCooldown)
-            return _target;
-        _findTimer = 0;
-        return entityManager.GetSurvivorNearsest(transform.position);
-    }
-
+    
     private void LookAhead(Vector3 direction)
     {
         Quaternion targetRot = Quaternion.LookRotation(direction);
@@ -136,5 +132,18 @@ public abstract class EnemyBase : MonoBehaviour
     public void TakeDamage(float damage)
     {
         healthComponent.TakeDamage(damage);
+    }
+
+    
+
+
+    public void SetTarget(Transform _target)
+    {
+        this._target =  _target;        
+    }
+
+    public Vector3 GetPosition()
+    {
+        return transform.position;
     }
 }

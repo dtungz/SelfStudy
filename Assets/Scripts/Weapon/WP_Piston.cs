@@ -38,7 +38,7 @@ public class WP_Piston: MonoBehaviour, IWeapon, IModifiable
     private void Fire()
     {
         Bullet bullet = PoolManager.Spawn<Bullet>(PoolType.bullet, transform.position, Quaternion.identity);
-        bullet.Init(3f, damage);
+        bullet.Init(3f, damage, FactionType.Survivor);
     }
     
 }
