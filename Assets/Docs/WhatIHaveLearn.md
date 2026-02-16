@@ -771,3 +771,5 @@ public void OnClickStart()
   - Ví dụ khi ta đã xác định được Con chó có các hành vi chính như sủa, đi, vệ sinh, nhai
   - Từ đó ta có thể cho nhưng con chó khác kế thừa base như chó Shiba sủa gâu gâu, đi 4 chân, vệ sinh ở WC, nhai hạt. Còn chó bạn thân thì sủa cc, đi 4 chân, đi vệ sinh ở bụi cỏ, nhai sách vở.
   - NHƯNG ta sẽ xác định là không kế thừa các thành phần như chó con hay chó cha vì nó không cần thiết và điều đó cũng sẽ nâng độ phụ thuộc lên
+## KẾT THÚC PHASE 1
+---
