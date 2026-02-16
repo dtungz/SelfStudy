@@ -32,14 +32,21 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable
     protected float _attackTimer;
     protected float _findTimer;
     
-    public UnityEvent<EnemyBase> getTarget;
+    public event Action <EnemyBase> getTargetEvent;
+    public event Action <EnemyBase> dieEvent;
     public FactionType Faction => FactionType.Enemy;
+    
 
     private void Awake()
     {
         Initalize();
     }
-    
+
+    private void Start()
+    {
+        healthComponent.AddDieEvent(OnDie);
+    }
+
     // ----- CORE LOOP -----
     private void Update()
     {
@@ -76,7 +83,10 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable
         if (_target == null)
         {
             targetDirection = Vector3.back;
-            getTarget?.Invoke(this);
+            if (Time.time <= _findTimer)
+                return;
+            _findTimer = Time.time + FindSurvivorCooldown;
+            getTargetEvent?.Invoke(this);
         }
         else
         {
@@ -128,14 +138,18 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable
         
         attackPoint.localPosition = Vector3.forward * AttackRange / 2;
     }
+
+    private void OnDie()
+    {
+        dieEvent?.Invoke(this);
+    }
+    
+    //----- PUBLIC METHODS -----
     
     public void TakeDamage(float damage)
     {
         healthComponent.TakeDamage(damage);
     }
-
-    
-
 
     public void SetTarget(Transform _target)
     {
@@ -146,4 +160,15 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable
     {
         return transform.position;
     }
+
+    public void AddOnDieEvent(Action<EnemyBase> dieAction)
+    {
+        dieEvent += dieAction;
+    }
+
+    public void AddGetTargetEvent(Action<EnemyBase> getTargetAction)
+    {
+        getTargetEvent += getTargetAction;
+    }
+    
 }

@@ -630,6 +630,37 @@ public class Slot : MonoBehaviour
 
 - Qua so sánh thì Loose Coupling tránh việc các object biết nhau quá nhiều, tránh/ giảm thiểu sự phụ thuộc hết sức có thể
 
+### Task Event
+- Yeh thì trước khi sang Task này thì mình sẽ refactor 1 tẹo, vì hiện tại survivor đang chỉ có 1 mà enemy thì có rất nhiều nên mình sẽ truyền luôn transform của player cho enemy...
+- Sau đó thì mình sẽ lấy target list của enemy init cho player để player chọn ra enemy gần nhất và bắn (tránh tình trạng enemy đi ra sau player và player không thể target)
+#### Kiến thức
+- Về phần task này thì có lẽ là mình cũng hiểu khá nhanh (hoặc không), nhưng chủ yếu là nói về cách Event hoạt động, cách event hỗ trợ mình để giảm coupling
+- Ngoài ra thì task này cx nói về Obsever Parttern. Lúc đầu thì mình hiểu cái những cái OSV PT nói, nhưng chỉ là kiểu mà hiểu cách nó nói chứ không thực sự biết nó như thế nào
+- Vậy mình đã làm gì?
+  - Hmmm tất nhiên là mình sẽ lên google, chatgpt or bất kì nguồn nào và gõ : obsever partternn là gì? cách hoạt động vv...
+  - Và mình đã xem qua chat, 1 blog, 1 kênh youtube thì mình hiểu rằng, obsever parttern là việc sử dụng event để tránh việc giảm coupling
+  - Có vẻ là cách giải thích của mình hơi khó hiểu, thì mình sẽ đính kèm bài viết về Obsever Parttern mà mình đã đọc, khá dễ hiểu hehe : [Link nè]([Link nè(https://thoxaylamcoder.wordpress.com/2016/02/24/observerpattern-trong-unity3d/)])
+- Ok thì quay lại với bản thân mình nào, mình sẽ giải thích theo cách mình hiểu nhóe
+  - (1) Vấn đề : Khi 1 thằng cu mất máu, sẽ có rất nhiều thứ cần biết như UI để hiển thị, Sound để phát sound... Nhưng để gọi được các hàm trong sound hay UI thì mình phải ref đến thằnhg UI, Sound cho thằng mất máu để nó gọi
+    - Vậy có 1 vấn đề lớn xảy ra, nếu quá nhiều cái cần thì mình sẽ kéo thả hoặc singleton hết tất cả ư? việc này khiến cho code siêu to khổng lồ và cx có khi dễ bug nữa.
+  - (2) Giải quyết : Vậy Obsever Parttern sẽ giải quyết điều đó. Ví dụ khi thằng player mất máu, nó sẽ kiểu "Ui mất 1 máu đau vãi òng".
+    - Tức là lúc này nó sẽ hét lên và chả quan tâm ai nghe được cả. Thì lúc này những thằng như UI nghe được nè thì sẽ hiển thị, thằng sound nghe được thì nó phát ra sound "Đau" kiểu kiểu đó
+    - Nghĩa là ở đây, thằng player không cần biết thằng UI Manager là thằng nào, Sound Manager là thằng nào => Loose Coupling (maybe)
+  - (3) Hướng đi :
+    - (Thô sơ) : Như trong code của mình, mình ref thằng player cho thg EntityManager và tất cả những thg Enemy cx cho entity player luôn và thằng entity sẽ đằng kí bằng cách truy cập vào các hàm Add...
+      - Việc này vẫn hơi phụ thuộc các script. Ngoài ra thì cx khá khó để Remove event nữa
+    - (Hiện đại hơn) : Event Bus hoặc Event Channel.
+      - Về Event Bus thì mình chưa tìm hiểu nhưng đối với Event Channel, chúng ta sẽ có 2 script quan trong đó là Event Channel SO và Event Listener
+      - Về Event Channel sẽ là 1 thằng abstract class SO để tạo ra các SO (tác dụng mình sẽ nói bên dưới)
+      - Về Event Listener thì thằng này sẽ để người khác đăng kí sự kiện qua SO
+        - Cách hoạt động thì bạn sẽ tạo 1 script SO kế thừa EventChannelSO kiểu OnDeathChannelSO và tạo ra 1 cái SO từ nó
+        - Sau đó trong code (thằng mà gọi sự kiện/ Raise sự kiện) sẽ ref vào thằng này kiểu [SerializeField] gì gì đó.
+        - Còn đối với những thằng lắng nghe (như UI hay Sound) thì sẽ sử dụng script OnDeathListener (1 script kế thừa từ thằng Event Listener và thg EL đó kế thừa mono).
+          - Bạn chỉ việc kéo thẳng thằng script vào thằng mà bạn muốn như thằng UI manager chẳng hạn. Lúc đó 1 ô của UnityEvent sẽ hiện lên
+          - Tại đây, bạn sẽ kéo cái script (của thằng listener) chứa script bạn muốn gọi vào. Lúc này thì Event Channel sẽ lo liệu việc đăng kí sự kiện.
+          - Lúc mà OnRaise trong thằng ref thì tất cả những thằng được đăng kí sẽ được gọi (Mình nghĩ mng nên xem lại ở youtube hehe)
+    - Ngoài ra thì trong task này mình cũng chỉ refactor lại code cho player kiếm target chứ cũng không làm gì nhìu nên kiến thức chỉ có thể thoai
+    - Vậy là cũng xong task cuối cùng của phase 1 roài hehehehe
 
 ## Check List
 ### Module 1: Modeling
@@ -648,10 +679,10 @@ public class Slot : MonoBehaviour
 
 ### Module 3: Dependency
 - [x] Nhận ra được **tight coupling** trong code
-- [ ] Biết dùng **Dependency Injection đơn giản** thay vì `FindObjectOfType`
+- [x] Biết dùng **Dependency Injection đơn giản** thay vì `FindObjectOfType`
 - [x] Hiểu **Events giúp loose coupling** như thế nào
 - [x] Biết tách abstraction (interface) để giảm phụ thuộc
-- [ ] Hiểu **Law of Demeter** — chỉ nói chuyện với "friends" trực tiếp
+- [x] Hiểu **Law of Demeter** — chỉ nói chuyện với "friends" trực tiếp
 
 ---
 
@@ -713,6 +744,7 @@ public void OnClickStart()
 
 - Một cách khá phổ biến với Event là EventChannelSO, chúng ta sẽ đăng kí sự kiện qua 1 SO hoặc là Event bus, giảm coupling vô cùng mạnh mẽ (i think so)
 
+  - Sau khi học xong thì thấy mấy cái trên vẫn đúng hehe
 
 9. **Law of Demeter:** Tại sao Slot không nên truy cập `Food.Config.Type`?
 - Mình sẽ tư duy ngược một tẹo hehe. Kiểu như đặt câu hỏi : Slot truy cập vào Food.Config.Type để làm gì?

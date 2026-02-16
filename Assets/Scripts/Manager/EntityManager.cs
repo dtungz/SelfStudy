@@ -5,11 +5,22 @@ using Random = UnityEngine.Random;
 
 public class EntityManager : MonoBehaviour
 {
-    [SerializeField] private List<Transform> survivors = new List<Transform>();
+    [SerializeField] private Survivor survivor;
     [SerializeField] private List<EnemyBase> enemyPrefabs = new List<EnemyBase>();
     [SerializeField] private float floorWidth;
     [SerializeField] private int enemyNumberSpawn;
     [SerializeField] private Transform enemySpawnPoint;
+    private List<EnemyBase> _enemies = new List<EnemyBase>();
+
+    private void OnEnable()
+    {
+        survivor.AddFindEnemyEvent(FindNearestEnemy);
+    }
+
+    private void OnDisable()
+    {
+        survivor.RemoveFindEnemyEvent(FindNearestEnemy);
+    }
 
     private void Start()
     {
@@ -24,42 +35,43 @@ public class EntityManager : MonoBehaviour
             Vector3 position = new Vector3(Random.Range(-floorWidth / 2, floorWidth / 2), enemySpawnPoint.position.y,
                 enemySpawnPoint.position.z);
             EnemyBase enemy = Instantiate(enemyPrefabs[randomEnemy], position , Quaternion.identity, enemySpawnPoint);
-            enemy.getTarget.AddListener(SetEnemyTarget);
+            enemy.AddGetTargetEvent(SetEnemyTarget);
+            _enemies.Add(enemy);
+            enemy.AddOnDieEvent(RemoveEnemy);
         }
-    }
-    
-    public Transform GetSurvivorNearsest(Vector3 position)
-    {
-        if (survivors.Count == 0)
-        {
-            return null;
-        }
-
-        Transform target = null;
-        for (int i = 0; i < survivors.Count; i++)
-        {
-            if (target == null || Vector3.Distance(position, survivors[i].position) <
-                Vector3.Distance(position, target.position))
-            {
-                target = survivors[i];
-            }
-        }
-        return target;
-    }
-
-    public void AddSurvivor(Transform survivor)
-    {
-        survivors.Add(survivor);
-    }
-
-    public void RemoveSurvivor(Transform survivor)
-    {
-        survivors.Remove(survivor);
     }
 
     public void SetEnemyTarget(EnemyBase enemy)
     {
-        Transform target = GetSurvivorNearsest(enemy.GetPosition());
-        enemy.SetTarget(target);
+        enemy.SetTarget(survivor.transform);
+    }
+
+    public void RemoveEnemy(EnemyBase enemy)
+    {
+        _enemies.Remove(enemy);
+        if (_enemies.Count == 0)
+        {
+            Invoke("SpawnEnemy", 3f);
+        }
+    }
+
+    public void FindNearestEnemy()
+    {
+        if (_enemies.Count == 0)
+        {
+            survivor.SetTarget(null);
+        }
+
+        Transform target = null;
+        Vector3 position = survivor.GetPosition();
+        for (int i = 0; i < _enemies.Count; i++)
+        {
+            if (target == null || Vector3.Distance(position, target.position) >
+                Vector3.Distance(position, _enemies[i].GetPosition()))
+            {
+                target = _enemies[i].transform;
+            }
+        }
+        survivor.SetTarget(target);
     }
 }

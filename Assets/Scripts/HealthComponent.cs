@@ -1,10 +1,13 @@
 using System;
 using UnityEngine;
 
+
 public class HealthComponent : MonoBehaviour
 {
     [SerializeField] private float health;
     private float _currentHp;
+    
+    public event Action onDied;
 
     private void Start()
     {
@@ -26,8 +29,15 @@ public class HealthComponent : MonoBehaviour
         _currentHp = Mathf.Min(_currentHp + amount, health);
     }
 
+    public void AddDieEvent(Action die)
+    {
+        onDied += die;
+    }
+    
+
     private void Die()
     {
+        onDied?.Invoke();
         Destroy(gameObject);
     }
 }
