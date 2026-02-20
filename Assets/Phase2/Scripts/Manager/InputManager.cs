@@ -10,6 +10,9 @@ public class InputManager : MonoBehaviour
     public InputAction MoveAction => _playerInput.Player.Move;
     public InputAction JumpAction => _playerInput.Player.Jump;
     public InputAction RunAction => _playerInput.Player.Run;
+    public InputAction AbilityAction => _playerInput.Player.ChangeAbility;
+    public InputAction ActiveAction => _playerInput.Player.Active;
+    
     private void Awake()
     {
         _playerInput = new PlayerInputSystem();
